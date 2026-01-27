@@ -1,132 +1,225 @@
+<?php
+session_start();
+$error = "";
+$success = "";
+
+// Connexion à la base de données
+try {
+    $conn = new PDO("mysql:host=localhost;dbname=commande_telephone;charset=utf8mb4", "root", "", [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]);
+} catch (PDOException $e) {
+    die("Erreur de connexion à la base de données: " . $e->getMessage());
+}
+
+// Fonction de validation
+function validate_input($nom, $prenom, $age, $tel, $email, $adresse) {
+    if (!preg_match("/^[a-zA-ZÀ-ÿ\s'-]+$/u", $nom)) return "Nom invalide.";
+    if (!preg_match("/^[a-zA-ZÀ-ÿ\s'-]+$/u", $prenom)) return "Prénom invalide.";
+    if (!is_numeric($age) || $age < 0) return "Age invalide.";
+    if (!preg_match("/^\d{8,15}$/", $tel)) return "Téléphone invalide.";
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return "Email invalide.";
+    if (empty(trim($adresse))) return "Adresse obligatoire.";
+    return true;
+}
+
+// Traitement du formulaire
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_commande'])) {
+    $nom = trim($_POST['nom'] ?? '');
+    $prenom = trim($_POST['prenom'] ?? '');
+    $age = intval($_POST['age'] ?? 0);
+    $sexe = $_POST['sexe'] ?? '';
+    $email = trim($_POST['email'] ?? '');
+    $tel = trim($_POST['tel'] ?? '');
+    $marque = trim($_POST['marque'] ?? '');
+    $date_de_livraison = $_POST['date_de_livraison'] ?? '';
+    $adresse = trim($_POST['adresse'] ?? '');
+    $commentaire = trim($_POST['commentaire'] ?? '');
+    $statut = 'En cours';
+
+    if (!$nom || !$prenom || !$sexe || !$email || !$tel || !$marque || !$date_de_livraison || !$adresse) {
+        $error = "Veuillez remplir tous les champs obligatoires.";
+    } else {
+        $valid = validate_input($nom, $prenom, $age, $tel, $email, $adresse);
+        if ($valid !== true) {
+            $error = $valid;
+        } else {
+            try {
+                $stmt = $conn->prepare("
+                    INSERT INTO commandes 
+                    (nom, prenom, age, sexe, email_client, tel, marque, date_de_livraison, adresse, commentaire, statut)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([$nom, $prenom, $age, $sexe, $email, $tel, $marque, $date_de_livraison, $adresse, $commentaire, $statut]);
+                $success = "Commande enregistrée avec succès !";
+            } catch (PDOException $e) {
+                $error = "Erreur lors de l'enregistrement de la commande.";
+            }
+        }
+    }
+}
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Passer une commande</title>
     <style>
-        body{
-            background: #b3d7e6ff;
-        }
-
-               form {
-            margin: auto;
-            max-width: 600px;
-            background-color: #636d6b1c;
-            border-radius: 30px;
-        }
-
-                h2{
-            text-align: center; 
-        }
-
-        .form-group {
+        /* Global */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f8;
             display: flex;
-            align-items: center;
-            margin-bottom: 12px;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
         }
 
-        label {
-            width: 160px;
-            text-align: right;
-            margin-right: 10px;
+        /* Container du formulaire */
+        .form-container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
         }
 
-        input, select, textarea {
-            flex: 1;
-            padding: 8px;
-            
+        h2 {
+            text-align: center;
+            color: #333;
         }
 
+        /* Inputs et select */
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 8px 0 16px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* Boutons */
         button {
-            margin-left: 250px;
-            margin-bottom: 20px ;
-            border-radius: 8px ;
-            width: 120px;
-            height: 35px;
-            background: #38a7d6ff;
-            border: none;
+            background-color: #4CAF50;
             color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
         }
 
-        div{
-            margin: 20px;
+        button:hover {
+            background-color: #45a049;
         }
 
-        input, select{
-            margin-right: none;
-            width: 200;
+        /* Messages */
+        .error-message {
+            color: #d8000c;
+            background-color: #ffbaba;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
         }
 
-        #div{
-            display: flex; 
+        .success-message {
+            color: #4F8A10;
+            background-color: #DFF2BF;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        /* Formulaire suivre commande */
+        .follow-btn {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .follow-btn button {
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <h2>Bienvenue sur le formulaire de commande en ligne</h2>
-    <form action="ajout_commande.php" method="post">
-        <div id="div">
-            <div>
-                <div>
-                    <label>Nom :</label><br>
-                    <input type="text" name="nom" required/>
-                </div>
+    <div class="form-container">
+        <h2>Passer une commande</h2>
 
-                <div>
-                    <label>Prénom :</label><br>
-                    <input type="text" name="prenom" required/>
-                </div>
-
-                <div>
-                    <label>Sexe :</label><br>
-                    <select name="sexe">
-                        <option disabled >--Choisissez--</option>
-                        <option>Féminin</option>
-                        <option>Masculin</option>
-                        <option>Autre</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Email :</label><br>
-                    <input type="email" name="email" required/> 
-                </div>
-                <div>
-                    <label>Téléphone : </label><br>
-                    <input type="text" name="tel"/>
-                </div>
+        <?php if ($error): ?>
+            <div class="error-message"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="success-message"><?= htmlspecialchars($success) ?></div>
+            <!-- Bouton pour suivre la commande -->
+            <div class="follow-btn">
+                <form method="get" action="connexion.php">
+                    <button type="submit">Suivre ma commande</button>
+                </form>
             </div>
+        <?php endif; ?>
 
-            <div>
-                <div>
-                    <label>Age: </label><br>
-                    <input type="number" name="age" required/>
-                </div>
+        <form method="post">
+            <label>Nom*:</label>
+            <input type="text" name="nom" required>
 
-                <div>
-                    <label>Marque de téléphone : </label><br>
-                    <input type="text" name="marque" />
-                </div>
+            <label>Prénom*:</label>
+            <input type="text" name="prenom" required>
 
-                <div>
-                    <label>Date de livraison : </label><br>
-                    <input type="date" name="date_livraison" required/>
-                </div>
+            <label>Age*:</label>
+            <input type="number" name="age" min="0" required>
 
-                <div>
-                    <label>Adresse : </label><br>
-                    <input type="text" name="adresse" required/>
-                </div>
+            <label>Sexe*:</label>
+            <select name="sexe" required>
+                <option value="">--Choisir--</option>
+                <option value="Masculin">Masculin</option>
+                <option value="Féminin">Féminin</option>
+                <option value="Féminin">Autre</option>
+            </select>
 
-                <div>
-                    <label>Commentaire : </label><br>
-                    <textarea name="commentaire"></textarea>
-                </div>
-            </div>
-        </div>
-            <button type="submit" name="valider">Valider</button>
-    </form>
+            <label>Email*:</label>
+            <input type="email" name="email" required>
+
+            <label>Téléphone*:</label>
+            <input type="text" name="tel" required>
+
+            <label>Marque du téléphone*:</label>
+            <input type="text" name="marque" required>
+
+            <label>Date de livraison*:</label>
+            <input type="date" name="date_de_livraison" required>
+
+            <label>Adresse*:</label>
+            <textarea name="adresse" required></textarea>
+
+            <label>Commentaire:</label>
+            <textarea name="commentaire"></textarea><br>
+
+            <button type="submit" name="submit_commande">Enregistrer la commande</button>
+        </form>
+    </div>
 </body>
 </html>
-
