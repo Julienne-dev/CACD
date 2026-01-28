@@ -46,6 +46,16 @@ $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         .status-en-cours {color:#d9822b;font-weight:bold;}
         .status-traite {color:#0c63e4;font-weight:bold;}
         .status-livre {color:#198754;font-weight:bold;}
+        .bottom-menu li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.bottom-menu li a:hover {
+    text-decoration: underline;
+}
     </style>
 </head>
 <body>
@@ -101,5 +111,8 @@ $commandes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </tbody>
         </table>
     <?php endif; ?>
+      <ul class="bottom-menu">
+        <li><a href="connexion.php">Déconnection</a></li>
+    </ul>
 </body>
 </html>
