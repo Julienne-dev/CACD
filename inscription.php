@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 // Vérifier si le client existe déjà
                 $stmt = $conn->prepare("SELECT id_client FROM client WHERE email_client = ?");
                 $stmt->execute([$email]);
-                $client = $stmt->fetch();
+                $client = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if (!$client) {
                     // Créer le client
@@ -100,11 +100,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                         "INSERT INTO client (email_client, password_client) VALUES (?, ?)"
                     );
                     $stmt->execute([$email, $hash]);
+                    // Récupérer l'id du nouveau client
+                    $id_client = $conn->lastInsertId();
                 }else{
-                    echo"Compte déjà existant";
+                    $error="Un compte existe déjà avec cet email. Veillez vous connecter";
+                    return;
                 }
+        
+            // Sécuriser la session (IMPORTANT)
+                session_regenerate_id(true);
 
+            // Stocker les bonnes infos en session    
                 $_SESSION['user_role'] = 'client';
+                $_SESSION['user_id'] = $id_client;
+                $_SESSION['email'] = $email;
                 header("Location: client.php");
                 exit;
             }
