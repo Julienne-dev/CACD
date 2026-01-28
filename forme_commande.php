@@ -17,7 +17,7 @@ function validate_input($nom, $prenom, $age, $tel, $email, $adresse) {
     if (!preg_match("/^[a-zA-ZÀ-ÿ\s'-]+$/u", $nom)) return "Nom invalide.";
     if (!preg_match("/^[a-zA-ZÀ-ÿ\s'-]+$/u", $prenom)) return "Prénom invalide.";
     if (!is_numeric($age) || $age < 0) return "Age invalide.";
-    if (!preg_match("/^01[0-9]{10}$/", $tel)) return "Numéro de téléphone invalide. Format attendu : 01XXXXXXXXXX";
+    if (!preg_match("/^01[0-9]{8}$/", $tel)) return "Numéro de téléphone invalide. Format attendu : 01XXXXXXXX";
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return "Email invalide.";
     if (empty(trim($adresse))) return "Adresse obligatoire.";
     return true;
@@ -205,7 +205,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_commande'])) {
             <input type="email" name="email" required>
 
             <label>Téléphone*:</label>
-            <input type="tel" name="tel" id="telephone" placeholder="01XXXXXXXX" pattern="^01[0-9]{10}$" required>
+            <input type="tel" name="tel" id="telephone" placeholder="01XXXXXXXX" pattern="^01[0-9]{8}$" required>
 
             <label>Marque du téléphone*:</label>
             <input type="text" name="marque" required>
@@ -225,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_commande'])) {
 
     <script>
         document.getElementById("telephone").addEventListener("input", function () {
-            const regex = /^01[0-9]{10}$/;
+            const regex = /^01[0-9]{8}$/;
             
             if (!regex.test(this.value)) {
                 this.setCustomValidity("Le numéro doit commencer par 01 et contenir 12 chiffres.");
