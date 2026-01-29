@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
     } else {
         try {
             // Connexion à la base de données
-            $conn = new PDO("mysql:host=localhost;dbname=commande_telephone;charset=utf8mb4", "root", "", [
+            $conn = new PDO("mysql:host=localhost;dbname=commande_telephone;charset=utf8mb4", "appuser", "july", [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ]);
 
