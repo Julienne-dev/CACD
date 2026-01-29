@@ -10,7 +10,7 @@ if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'client') {
 $email_client = $_SESSION['email'] ?? '';
 
 try {
-    $conn = new PDO("mysql:host=localhost;dbname=commande_telephone;charset=utf8mb4", "root", "", [
+    $conn = new PDO("mysql:host=localhost;dbname=commande_telephone;charset=utf8mb4", "appuser", "july", [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
     ]);
 } catch (PDOException $e) {
