@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_manager'])) {
         try {
             $conn = new PDO(
                 "mysql:host=localhost;dbname=commande_telephone;charset=utf8mb4",
-                "root",
-                "",
+                "appuser",
+                "july",
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
             );
 
